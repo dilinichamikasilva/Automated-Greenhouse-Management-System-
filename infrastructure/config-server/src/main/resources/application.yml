@@ -1,9 +1,13 @@
 server:
   port: 8888
+
 spring:
+  application:
+    name: config-server
   cloud:
     config:
       server:
         git:
-          uri: https://github.com/YOUR_USERNAME/agms-config-repo
-        default-label: main
+          uri: https://github.com/dilinichamikasilva/Automated-Greenhouse-Management-System-.git
+          search-paths: config-repo
+          default-label: main
