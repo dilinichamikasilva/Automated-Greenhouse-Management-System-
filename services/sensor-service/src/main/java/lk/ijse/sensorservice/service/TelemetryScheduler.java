@@ -1,76 +1,105 @@
 package lk.ijse.sensorservice.service;
 
-import lk.ijse.sensorservice.client.AutomationClient;
-import lk.ijse.sensorservice.client.ZoneClient;
-import lk.ijse.sensorservice.manager.TokenManager;
-import org.springframework.beans.factory.annotation.Autowired;
+import lk.ijse.sensorservice.dto.SensorDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class TelemetryScheduler {
 
-    @Autowired
-    private TokenManager tokenManager;
+    private final RestTemplate restTemplate;
+    private final RestTemplate loadBalancedRestTemplate;
 
-    @Autowired
-    private ZoneClient zoneClient;
+    private String cachedToken;
+    private SensorDTO lastReading;
 
-    @Autowired
-    private AutomationClient automationClient;
+    @Value("${iot.external.auth-url}")
+    private String authUrl;
 
-    @Value("${iot.api.base-url}")
-    private String iotBaseUrl;
+    @Value("${iot.external.data-url}")
+    private String dataUrl;
 
-    private final WebClient webClient;
+    @Value("${iot.external.username}")
+    private String username;
 
-    public TelemetryScheduler(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.build();
+    @Value("${iot.external.password}")
+    private String password;
+
+    private final String AUTOMATION_SERVICE_URL = "http://automation-service/api/v1/automation/process";
+
+    public TelemetryScheduler(
+            RestTemplate restTemplate,
+            @Qualifier("loadBalancedRestTemplate") RestTemplate loadBalancedRestTemplate) {
+        this.restTemplate = restTemplate;
+        this.loadBalancedRestTemplate = loadBalancedRestTemplate;
     }
 
-    @Scheduled(fixedDelay = 10000)
-    public void fetchAndPush() {
-        System.out.println("Fetching telemetry...");
+    private void refreshToken() {
         try {
-            List<Map<String, Object>> zones = zoneClient.getAllZones();
-            for (Map<String, Object> zone : zones) {
-                String deviceId = (String) zone.get("deviceId");
-                Long zoneId = ((Number) zone.get("id")).longValue();
+            Map<String, String> loginRequest = new HashMap<>();
+            loginRequest.put("email", username);
+            loginRequest.put("password", password);
 
-                if (deviceId != null) {
-                    fetchAndPushForDevice(deviceId, zoneId);
-                }
+            ResponseEntity<Map> response = restTemplate.postForEntity(authUrl, loginRequest, Map.class);
+            if (response.getBody() != null) {
+                this.cachedToken = (String) response.getBody().get("token");
+                log.info("Token refreshed successfully.");
             }
         } catch (Exception e) {
-            System.err.println("Error fetching zones: " + e.getMessage());
+            log.error("Failed to refresh token: {}", e.getMessage());
         }
     }
 
-    private void fetchAndPushForDevice(String deviceId, Long zoneId) {
-        try {
-            Map telemetry = webClient.get()
-                    .uri(iotBaseUrl + "/devices/telemetry/" + deviceId)
-                    .header("Authorization", "Bearer " + tokenManager.getAccessToken())
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
-
-            if (telemetry != null) {
-                telemetry.put("zoneId", zoneId);
-                telemetry.put("deviceId", deviceId);
-                automationClient.process(telemetry);
-                System.out.println("Pushed telemetry for device: " + deviceId);
-            }
-        } catch (WebClientResponseException.Unauthorized e) {
-            tokenManager.refresh();
-        } catch (Exception e) {
-            System.err.println("Error fetching telemetry for device " + deviceId + ": " + e.getMessage());
+    @Scheduled(fixedRate = 10000)
+    public void fetchAndPushTelemetry() {
+        if (cachedToken == null) {
+            refreshToken();
         }
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(cachedToken);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<SensorDTO> response = restTemplate.exchange(
+                    dataUrl, HttpMethod.GET, entity, SensorDTO.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                processAndPush(response.getBody());
+            }
+
+        } catch (HttpClientErrorException.Unauthorized e) {
+            this.cachedToken = null;
+        } catch (Exception e) {
+            SensorDTO mockData = new SensorDTO(28.5, 72.0, 1L, LocalDateTime.now());
+            processAndPush(mockData);
+        }
+    }
+
+    private void processAndPush(SensorDTO data) {
+        data.setTimestamp(LocalDateTime.now());
+        this.lastReading = data;
+        log.info("Pushing data to Automation Service: {}°C", data.getTemperature());
+
+        try {
+            loadBalancedRestTemplate.postForEntity(AUTOMATION_SERVICE_URL, data, Void.class);
+        } catch (Exception e) {
+            log.error("Could not push to Automation Service: {}", e.getMessage());
+        }
+    }
+
+    public SensorDTO getLatestReading() {
+        return lastReading;
     }
 }

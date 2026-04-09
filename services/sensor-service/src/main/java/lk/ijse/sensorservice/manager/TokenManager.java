@@ -10,7 +10,7 @@ import java.util.Map;
 @Component
 public class TokenManager {
 
-    @Value("${iot.api.base-url}")
+    @Value("${iot.api.url}")
     private String baseUrl;
 
     @Value("${iot.credentials.username}")
