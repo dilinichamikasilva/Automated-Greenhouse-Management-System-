@@ -90,6 +90,6 @@ public class ZoneServiceImpl implements ZoneService {
 
     @Override
     public void deleteZone(Long id) {
-
+        zoneRepository.deleteById(id);
     }
 }
