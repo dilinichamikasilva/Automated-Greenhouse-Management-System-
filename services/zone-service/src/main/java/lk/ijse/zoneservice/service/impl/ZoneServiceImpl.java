@@ -73,7 +73,19 @@ public class ZoneServiceImpl implements ZoneService {
 
     @Override
     public ZoneResponse updateZone(Long id, ZoneRequest request) {
-        return null;
+        if (request.getMinTemp() >= request.getMaxTemp()) {
+            throw new IllegalArgumentException("Min temperature must be less than max temperature.");
+        }
+
+        Zone zone = zoneRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Zone not found with id: " + id));
+
+        zone.setName(request.getName());
+        zone.setMinTemp(request.getMinTemp());
+        zone.setMaxTemp(request.getMaxTemp());
+
+        Zone updatedZone = zoneRepository.save(zone);
+        return mapToResponse(updatedZone);
     }
 
     @Override
