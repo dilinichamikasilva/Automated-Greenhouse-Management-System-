@@ -66,7 +66,9 @@ public class ZoneServiceImpl implements ZoneService {
 
     @Override
     public ZoneResponse getZoneById(Long id) {
-        return null;
+        Zone zone = zoneRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Zone not found with id: " + id));
+        return mapToResponse(zone);
     }
 
     @Override
