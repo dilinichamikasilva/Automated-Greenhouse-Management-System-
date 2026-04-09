@@ -1,7 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:sensor_db
+    driver-class-name: org.h2.Driver
+    username:
+    password:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+
 server:
   port: 8082
 
-# External API Configuration
 iot:
   api:
-    url: http://104.211.95.241:8080/api/sensor-data
+    base-url: http://104.211.95.241:8080/api
+  credentials:
+    username: student123
+    password: password123
