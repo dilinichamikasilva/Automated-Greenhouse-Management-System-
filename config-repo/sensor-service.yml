@@ -1,0 +1,7 @@
+server:
+  port: 8082
+
+# External API Configuration
+iot:
+  api:
+    url: http://104.211.95.241:8080/api/sensor-data
