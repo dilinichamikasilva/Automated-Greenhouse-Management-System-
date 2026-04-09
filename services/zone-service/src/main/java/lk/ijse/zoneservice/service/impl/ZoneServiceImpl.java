@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,9 @@ public class ZoneServiceImpl implements ZoneService {
 
     @Override
     public List<ZoneResponse> getAllZones() {
-        return List.of();
+        return zoneRepository.findAll().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
