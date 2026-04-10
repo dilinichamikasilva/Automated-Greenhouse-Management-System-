@@ -6,9 +6,9 @@
       <list>
         <option value="$PROJECT_DIR$/infrastructure/eureka-server/pom.xml" />
         <option value="$PROJECT_DIR$/infrastructure/config-server/pom.xml" />
-        <option value="$PROJECT_DIR$/services/zone-service/pom.xml" />
         <option value="$PROJECT_DIR$/services/sensor-service/pom.xml" />
         <option value="$PROJECT_DIR$/services/automation-service/pom.xml" />
+        <option value="$PROJECT_DIR$/services/zone-service/pom.xml" />
       </list>
     </option>
   </component>
