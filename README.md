@@ -1,14 +1,5 @@
 <div align="center">
 
-```
-░█████╗░░██████╗░███╗░░░███╗░██████╗
-██╔══██╗██╔════╝░████╗░████║██╔════╝
-███████║██║░░██╗░██╔████╔██║╚█████╗░
-██╔══██║██║░░╚██╗██║╚██╔╝██║░╚═══██╗
-██║░░██║╚██████╔╝██║░╚═╝░██║██████╔╝
-╚═╝░░╚═╝░╚═════╝░╚═╝░░░░╚═╝╚═════╝░
-```
-
 ### Automated Greenhouse Management System
 
 *A cloud-native microservice platform — live IoT data, automated rules, zero manual monitoring.*
