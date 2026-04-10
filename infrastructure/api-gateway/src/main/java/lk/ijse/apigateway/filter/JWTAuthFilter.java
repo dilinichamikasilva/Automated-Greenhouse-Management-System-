@@ -30,18 +30,25 @@ public class JWTAuthFilter implements GatewayFilter {
                 .noneMatch(uri -> r.getURI().getPath().contains(uri));
 
         if (isApiSecured.test(request)) {
+            System.out.println("Path is secured: " + request.getURI().getPath()); // DEBUG
+
             if (!request.getHeaders().containsKey("Authorization")) {
+                System.out.println("Error: Missing Authorization Header"); // DEBUG
                 return onError(exchange, "No Authorization Header", HttpStatus.UNAUTHORIZED);
             }
 
             String token = request.getHeaders().getOrEmpty("Authorization").get(0);
+            System.out.println("Full Header Value: " + token); // DEBUG
+
             if (token != null && token.startsWith("Bearer ")) {
                 token = token.substring(7);
             }
 
             try {
                 jwtUtil.validateToken(token);
+                System.out.println("Token Validated Successfully!"); // DEBUG
             } catch (Exception e) {
+                System.out.println("Token Validation Failed: " + e.getMessage()); // DEBUG
                 return onError(exchange, "Invalid Token", HttpStatus.UNAUTHORIZED);
             }
         }

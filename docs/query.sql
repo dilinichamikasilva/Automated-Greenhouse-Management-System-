@@ -1,2 +1,3 @@
 CREATE DATABASE IF NOT EXISTS agms_zone_db;
 CREATE DATABASE IF NOT EXISTS agms_automation_db
+
