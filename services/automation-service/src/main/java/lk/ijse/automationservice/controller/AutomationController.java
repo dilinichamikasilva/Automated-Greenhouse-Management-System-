@@ -13,7 +13,7 @@ import java.util.Map;
 @RequestMapping("/api/automation")
 public class AutomationController {
 
-    private AutomationService automationService;
+    private final AutomationService automationService;
 
     @PostMapping("/process")
     public void process(@RequestBody Map<String, Object> telemetry) {

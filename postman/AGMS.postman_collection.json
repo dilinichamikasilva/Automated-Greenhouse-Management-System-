@@ -1,0 +1,313 @@
+{
+  "info": {
+    "_postman_id": "e2ce1646-551e-4276-84b6-e018edf8787a",
+    "name": "AGMS",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "45678879"
+  },
+  "item": [
+    {
+      "name": "zone-service",
+      "item": [
+        {
+          "name": "create",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Seedling Nursery\",\r\n  \"minTemp\": 21.0,\r\n  \"maxTemp\": 25.0\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/zones/create",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "zones",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-all",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/zones/get-all",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "zones",
+                "get-all"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-specific-one",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Nursery Unit - Updated\",\r\n  \"minTemp\": 21.0,\r\n  \"maxTemp\": 27.5\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/zones/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "zones",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/zones/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "zones",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"student123\",\r\n    \"password\": \"password123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "automation-service",
+      "item": [
+        {
+          "name": "automation-process",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzdHVkZW50MTIzIiwiaWF0IjoxNzc1ODAxMzE2LCJleHAiOjE3NzU4MzczMTZ9.Jneq2XehWSr13EyTaMXNuqmO2QHcN_iAqImFLM4ul-i3XQ8MDcri4ZYn5u2f8_SigSAL5_TKBc4CrSvjfawvCg",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"temperature\": 32.5,\r\n    \"humidity\": 45.0,\r\n    \"sensorId\": 1,\r\n    \"zoneId\": \"Z-101\",\r\n    \"status\": \"ACTIVE\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/automation/process",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "automation",
+                "process"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-all-logs",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "sensor-service",
+      "item": [
+        {
+          "name": "get-latest",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "crop-service",
+      "item": [
+        {
+          "name": "register-batch",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"batchId\": \"BATCH-2026-001\",\r\n  \"cropName\": \"Organic Carrots\",\r\n  \"category\": \"Root Vegetable\",\r\n  \"status\": \"SEEDLING\",\r\n  \"zoneId\": 5,\r\n  \"plantedDate\": \"2026-04-12\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/crops",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "crops"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update-lifecycle",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJzdHVkZW50MTIzIiwiaWF0IjoxNzc1OTcwMDU2LCJleHAiOjE3NzYwMDYwNTZ9.q0c6vW-kDIsfSjVCYnf4saSi3iPTL8jAoy0w8cpzA1VpfSGP-66FIuQkEKdvcz0L",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/crops/69db2afe387f0bf0306c8faf/status?status=VEGETATIVE",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "crops",
+                "69db2afe387f0bf0306c8faf",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "VEGETATIVE"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get-all-crops",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "get-specific-crop",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
