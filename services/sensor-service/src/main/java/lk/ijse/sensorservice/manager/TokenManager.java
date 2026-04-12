@@ -1,6 +1,7 @@
 package lk.ijse.sensorservice.manager;
 
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -10,7 +11,7 @@ import java.util.Map;
 @Component
 public class TokenManager {
 
-    @Value("${iot.api.url}")
+    @Value("${iot.api.base-url}")
     private String baseUrl;
 
     @Value("${iot.credentials.username}")
@@ -35,7 +36,7 @@ public class TokenManager {
 
     public synchronized void login() {
         try {
-            Map<String, String> response = webClient.post()
+            Map response = webClient.post()
                     .uri(baseUrl + "/auth/login")
                     .bodyValue(Map.of("username", username, "password", password))
                     .retrieve()
@@ -43,8 +44,8 @@ public class TokenManager {
                     .block();
 
             if (response != null) {
-                this.accessToken = response.get("accessToken");
-                this.refreshToken = response.get("refreshToken");
+                this.accessToken = (String) response.get("accessToken");
+                this.refreshToken = (String) response.get("refreshToken");
             }
         } catch (Exception e) {
             System.err.println("Failed to login to IoT API: " + e.getMessage());
@@ -57,7 +58,7 @@ public class TokenManager {
 
     public synchronized void refresh() {
         try {
-            Map<String, String> response = webClient.post()
+            Map response = webClient.post()
                     .uri(baseUrl + "/auth/refresh")
                     .bodyValue(Map.of("refreshToken", refreshToken))
                     .retrieve()
@@ -65,7 +66,7 @@ public class TokenManager {
                     .block();
 
             if (response != null) {
-                this.accessToken = response.get("accessToken");
+                this.accessToken = (String) response.get("accessToken");
             }
         } catch (Exception e) {
             System.err.println("Failed to refresh IoT token: " + e.getMessage());

@@ -3,8 +3,8 @@ package lk.ijse.sensorservice.service;
 import lk.ijse.sensorservice.client.AutomationClient;
 import lk.ijse.sensorservice.client.ZoneClient;
 import lk.ijse.sensorservice.manager.TokenManager;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -13,47 +13,49 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class TelemetryScheduler {
 
-    @Autowired
-    private TokenManager tokenManager;
-
-    @Autowired
-    private ZoneClient zoneClient;
-
-    @Autowired
-    private AutomationClient automationClient;
+    private final TokenManager tokenManager;
+    private final ZoneClient zoneClient;
+    private final AutomationClient automationClient;
+    private final WebClient webClient;
 
     @Value("${iot.api.base-url}")
     private String iotBaseUrl;
 
-    private final WebClient webClient;
-
-    public TelemetryScheduler(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.build();
-    }
+    private final Map<Long, Map<String, Object>> latestReadings = new ConcurrentHashMap<>();
 
     @Scheduled(fixedDelay = 10000)
     public void fetchAndPush() {
-        System.out.println("Fetching telemetry...");
+        log.info("Starting telemetry fetch cycle...");
         try {
             List<Map<String, Object>> zones = zoneClient.getAllZones();
-            for (Map<String, Object> zone : zones) {
-                String deviceId = (String) zone.get("deviceId");
-                Long zoneId = ((Number) zone.get("id")).longValue();
+            if (zones == null || zones.isEmpty()) {
+                log.warn("No zones found to monitor.");
+                return;
+            }
 
-                if (deviceId != null) {
-                    fetchAndPushForDevice(deviceId, zoneId);
+            for (Map<String, Object> zone : zones) {
+                Object deviceIdObj = zone.get("deviceId");
+                Object idObj = zone.get("id");
+
+                if (deviceIdObj != null && idObj != null) {
+                    String deviceId = deviceIdObj.toString();
+                    Long zoneId = ((Number) idObj).longValue();
+                    fetchWithRetry(deviceId, zoneId, true);
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error fetching zones: " + e.getMessage());
+            log.error("Critical error during zone discovery: {}", e.getMessage());
         }
     }
 
-    private void fetchAndPushForDevice(String deviceId, Long zoneId) {
+    private void fetchWithRetry(String deviceId, Long zoneId, boolean canRetry) {
         try {
             Map telemetry = webClient.get()
                     .uri(iotBaseUrl + "/devices/telemetry/" + deviceId)
@@ -65,13 +67,26 @@ public class TelemetryScheduler {
             if (telemetry != null) {
                 telemetry.put("zoneId", zoneId);
                 telemetry.put("deviceId", deviceId);
+
+                latestReadings.put(zoneId, telemetry);
+
                 automationClient.process(telemetry);
                 System.out.println("Pushed telemetry for device: " + deviceId);
             }
         } catch (WebClientResponseException.Unauthorized e) {
-            tokenManager.refresh();
+            if (canRetry) {
+                System.out.println("Token expired. Refreshing and retrying...");
+                tokenManager.refresh();
+                fetchWithRetry(deviceId, zoneId, false);
+            } else {
+                tokenManager.login();
+            }
         } catch (Exception e) {
             System.err.println("Error fetching telemetry for device " + deviceId + ": " + e.getMessage());
         }
+    }
+
+    public Map<Long, Map<String, Object>> getLatestReadings() {
+        return latestReadings;
     }
 }
