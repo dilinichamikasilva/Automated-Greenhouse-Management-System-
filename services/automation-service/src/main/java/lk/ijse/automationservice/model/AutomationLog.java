@@ -21,10 +21,13 @@ public class AutomationLog {
     private Long zoneId;
     private String action;
     private Double temperature;
+    private Double humidity;
     private LocalDateTime triggeredAt;
 
     @PrePersist
     protected void onCreate() {
         triggeredAt = LocalDateTime.now();
     }
+
+
 }
