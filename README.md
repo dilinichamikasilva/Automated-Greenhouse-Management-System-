@@ -1,24 +1,17 @@
 <div align="center">
 
-### Automated Greenhouse Management System
+# 🌿 AGMS — Automated Greenhouse Management System
 
-*A cloud-native microservice platform — live IoT data, automated rules, zero manual monitoring.*
-
-<br/>
+*A cloud-native Spring Cloud microservice platform for precision greenhouse monitoring and automation.*
 
 [![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-6DB33F?style=flat-square&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2023.0.1-6DB33F?style=flat-square&logo=spring&logoColor=white)](https://spring.io/projects/spring-cloud)
 [![MySQL](https://img.shields.io/badge/MySQL-Zone%20%26%20Automation-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Crop%20Service-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![H2](https://img.shields.io/badge/H2-Sensor%20Service-blue?style=flat-square)](https://h2database.com/)
 [![JWT](https://img.shields.io/badge/JWT-Secured-black?style=flat-square&logo=jsonwebtokens)](https://jwt.io/)
 
-<br/>
-
-**[🏗️ Architecture](#️-architecture) · [🚀 Quick Start](#-quick-start) · [🔐 Authentication](#-authentication) · [📋 API Reference](#-api-reference) · [🌱 Crop Lifecycle](#-crop-lifecycle)**
-
-<br/>
+**[Architecture](#️-architecture) · [Quick Start](#-quick-start) · [Authentication](#-authentication) · [API Reference](#-api-reference) · [Data Flow](#-end-to-end-data-flow)**
 
 > 🔗 **Repository:** [github.com/dilinichamikasilva/Automated-Greenhouse-Management-System-](https://github.com/dilinichamikasilva/Automated-Greenhouse-Management-System-)
 
@@ -28,7 +21,7 @@
 
 ## 🌍 Overview
 
-AGMS is a distributed Spring Cloud microservice platform for precision greenhouse management. It connects to a **live external IoT API** (`http://104.211.95.241:8080/api`) acting as a remote thermo-hygrometer, fetches real-time temperature and humidity telemetry every **10 seconds**, and runs an automated rule engine that logs `TURN_FAN_ON`, `TURN_HEATER_ON`, or `STATUS_NORMAL` for every zone — all secured behind a JWT-validated API Gateway.
+AGMS is a distributed Spring Cloud microservice system for precision greenhouse management. It connects to a **live external IoT API** acting as a remote thermo-hygrometer, fetches real-time temperature and humidity telemetry every **10 seconds**, and runs an automated rule engine that logs `TURN_FAN_ON`, `TURN_HEATER_ON`, or `STATUS_NORMAL` for every monitored zone — all secured behind a JWT-validated API Gateway.
 
 ---
 
@@ -72,10 +65,10 @@ AGMS is a distributed Spring Cloud microservice platform for precision greenhous
 | Service | Port | Package | Database | Role |
 |---------|------|---------|----------|------|
 | 🔍 **Eureka Server** | `8761` | `lk.paymedia.eurekaserver` | — | Service registry |
-| ⚙️ **Config Server** | `8888` | `lk.ijse.configserver` | Git (`config-repo/`) | Centralised config |
-| 🛡️ **API Gateway** | `8080` | `lk.ijse.apigateway` | — | JWT auth + routing |
+| ⚙️ **Config Server** | `8888` | `lk.ijse.configserver` | Git (`config-repo/`) | Centralised configuration |
+| 🛡️ **API Gateway** | `8080` | `lk.ijse.apigateway` | — | JWT authentication + routing |
 | 🌿 **Zone Service** | `8081` | `lk.ijse.zoneservice` | MySQL `agms_zone_db` | Zone CRUD + IoT device registration |
-| 📡 **Sensor Service** | `8082` | `lk.ijse.sensorservice` | H2 in-memory | Telemetry scheduler (10s) |
+| 📡 **Sensor Service** | `8082` | `lk.ijse.sensorservice` | H2 in-memory | Telemetry scheduler (every 10s) |
 | ⚙️ **Automation Service** | `8083` | `lk.ijse.automationservice` | MySQL `agms_automation_db` | Rule engine + action logs |
 | 🌱 **Crop Service** | `8084` | `lk.ijse.cropservice` | MongoDB `agms_crop_db` | Crop lifecycle management |
 
@@ -90,20 +83,20 @@ AGMS is a distributed Spring Cloud microservice platform for precision greenhous
 | MySQL | 8.0+ |
 | MongoDB | 6.0+ |
 
-**Create the MySQL databases before starting:**
+**Create MySQL databases before starting:**
 
 ```sql
 CREATE DATABASE agms_zone_db;
 CREATE DATABASE agms_automation_db;
 ```
 
-MongoDB `agms_crop_db` is created automatically on first write.
+> MongoDB `agms_crop_db` is created automatically on the first write.
 
 ---
 
 ## 🚀 Quick Start
 
-> ⚠️ **Start services in this exact order.** Infrastructure must be fully up before domain services.
+> ⚠️ **Start services in this exact order.** Infrastructure must be fully running before domain services.
 
 ### 1️⃣ Eureka Server
 
@@ -123,7 +116,7 @@ cd infrastructure/config-server
 ./mvnw spring-boot:run
 ```
 
-Fetches all service properties from **`config-repo/`** in this repository via Git:
+Fetches all service configuration from `config-repo/` in this repository via Git:
 
 ```
 config-repo/
@@ -134,7 +127,7 @@ config-repo/
 └── crop-service.yml         ← MongoDB, port 8084
 ```
 
-✅ Health → **http://localhost:8888/actuator/health**
+✅ Health check → **http://localhost:8888/actuator/health**
 
 ---
 
@@ -169,7 +162,7 @@ cd services/crop-service && ./mvnw spring-boot:run
 
 ### 5️⃣ Verify in Eureka
 
-Open **http://localhost:8761** — all services should appear as **UP**:
+Open **http://localhost:8761** — all services should show as **UP**:
 
 ```
 ✅  ZONE-SERVICE          UP
@@ -178,7 +171,6 @@ Open **http://localhost:8761** — all services should appear as **UP**:
 ✅  CROP-SERVICE          UP
 ✅  CONFIG-SERVER         UP
 ```
-
 
 ---
 
@@ -198,6 +190,7 @@ Content-Type: application/json
 }
 ```
 
+**Response:**
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiJ9..."
@@ -261,17 +254,17 @@ Forward to downstream service ✅
 
 ## 🌐 API Reference
 
-> Base URL: `http://localhost:8080` | Header: `Authorization: Bearer <token>`
+> **Base URL:** `http://localhost:8080` | **Header:** `Authorization: Bearer <token>`
 
-### 🌿 Zone Service `/api/zones`
+### 🌿 Zone Service — `/api/zones`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/zones/create` | Create zone + register IoT device |
+| `POST` | `/api/zones/create` | Create a zone and register an IoT device |
 | `GET` | `/api/zones/get-all` | List all zones |
 | `GET` | `/api/zones/{id}` | Get zone by ID |
-| `PUT` | `/api/zones/{id}` | Update zone |
-| `DELETE` | `/api/zones/{id}` | Delete zone |
+| `PUT` | `/api/zones/{id}` | Update zone settings |
+| `DELETE` | `/api/zones/{id}` | Delete a zone |
 
 **Request body:**
 ```json
@@ -282,9 +275,9 @@ Forward to downstream service ✅
 }
 ```
 
-> ⚠️ `minTemp >= maxTemp` → `400 Bad Request` (enforced in `ZoneServiceImpl`)
+> ⚠️ `minTemp >= maxTemp` returns `400 Bad Request` (enforced in `ZoneServiceImpl`)
 
-**Response includes `deviceId`** registered with the External IoT API:
+**Response includes the `deviceId` registered with the External IoT API:**
 ```json
 {
   "id": 1,
@@ -304,22 +297,22 @@ No REST endpoints — operates entirely via its internal scheduler.
 
 `TelemetryScheduler` runs every **10 seconds**:
 1. Fetches all zones from Zone Service via `ZoneClient` (OpenFeign)
-2. Calls IoT API for each device's telemetry using `TokenManager`'s access token
-3. Pushes telemetry payload to Automation Service via `AutomationClient` (OpenFeign)
+2. Calls the IoT API for each device's telemetry using `TokenManager`'s access token
+3. Pushes the telemetry payload to Automation Service via `AutomationClient` (OpenFeign)
 
-**H2 Console** (development): http://localhost:8082/h2-console  
-Username: `shamodha` · Password: `123456`
+**H2 Console (development):** http://localhost:8082/h2-console  
+
 
 ---
 
-### ⚙️ Automation Service `/api/automation`
+### ⚙️ Automation Service — `/api/automation`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/automation/process` | Internal — receives telemetry from Sensor Service |
 | `GET` | `/api/automation/logs` | All action logs ordered by `triggeredAt DESC` |
 
-**Log entry:**
+**Log entry example:**
 ```json
 {
   "id": 42,
@@ -332,14 +325,14 @@ Username: `shamodha` · Password: `123456`
 
 ---
 
-### 🌱 Crop Service `/api/crops`
+### 🌱 Crop Service — `/api/crops`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/crops` | Register batch (auto `SEEDLING`, auto `plantedDate`) |
-| `GET` | `/api/crops` | Full inventory |
-| `GET` | `/api/crops/{id}` | Get by MongoDB ID |
-| `PUT` | `/api/crops/{id}/status?status=VEGETATIVE` | Advance lifecycle |
+| `POST` | `/api/crops` | Register a new batch (auto `SEEDLING` status, auto `plantedDate`) |
+| `GET` | `/api/crops` | Full crop inventory |
+| `GET` | `/api/crops/{id}` | Get crop by MongoDB ID |
+| `PUT` | `/api/crops/{id}/status?status=VEGETATIVE` | Advance crop lifecycle stage |
 
 **Register request:**
 ```json
@@ -406,7 +399,7 @@ AGMS/
 │   └── crop-service.yml
 │
 ├── infrastructure/
-│   ├── eureka-server/                ← lk.paymedia.eurekaserver
+│   ├── eureka-server/                ← lk.ijse.eurekaserver
 │   ├── config-server/                ← lk.ijse.configserver
 │   └── api-gateway/                  ← lk.ijse.apigateway
 │       ├── filter/JWTAuthFilter.java
@@ -435,31 +428,32 @@ AGMS/
 │       ├── model/Crop.java           ← @Document(collection = "crops")
 │       └── service/impl/CropServiceImpl.java
 │
-└── docs/
-    ├── eureka-status.png
-    ├── query.sql
-    └── postman/collections/
-        └── New Collection.postman_collection.json
+├── docs/
+│   ├── eureka-status.png
+│   └── query.sql
+│
+└── postman/
+    └── AGMS.postman_collection.json
 ```
 
 ---
 
 ## 🧪 Postman Testing
 
-Import `docs/postman/collections/New Collection.postman_collection.json`.
+Import `postman/AGMS.postman_collection.json` and follow this sequence:
 
 ```
 1.  POST  /auth/login                           → copy token
-2.  POST  /api/zones/create                     → note returned id
-3.  GET   /api/zones/get-all                    → verify zone
-4.  Wait 10–15 seconds for scheduler to run
+2.  POST  /api/zones/create                     → note returned id + deviceId
+3.  GET   /api/zones/get-all                    → verify zone registered
+4.  Wait 10–15 seconds for the scheduler to fire
 5.  GET   /api/automation/logs                  → see rule engine decisions
 6.  POST  /api/crops                            → register batch (SEEDLING)
 7.  PUT   /api/crops/{id}/status?status=VEGETATIVE
 8.  PUT   /api/crops/{id}/status?status=HARVESTED
 9.  GET   /api/crops                            → full inventory
-10. Try invalid transition again                → expect 400
-11. Call any endpoint without token             → expect 401
+10. Try an invalid transition again             → expect 400
+11. Call any endpoint without a token           → expect 401
 ```
 
 ---
@@ -480,7 +474,7 @@ Import `docs/postman/collections/New Collection.postman_collection.json`.
 | Inter-service Communication | `ZoneClient`, `AutomationClient` — OpenFeign |
 | Crop Lifecycle State Machine | `CropServiceImpl.isValidTransition()` |
 | Polyglot Persistence | MySQL (Zone, Automation) · H2 (Sensor) · MongoDB (Crop) |
-| Postman Collection | `docs/postman/collections/New Collection.postman_collection.json` |
+| Postman Collection | `postman/AGMS.postman_collection.json` |
 | Eureka Screenshot | `docs/eureka-status.png` |
 
 ---
@@ -490,10 +484,6 @@ Import `docs/postman/collections/New Collection.postman_collection.json`.
 *ITS 2018 — Software Architectures & Design Patterns II*
 
 *Graduate Diploma in Software Engineering · IJSE*
-
-```
-"The greenhouse never sleeps. Neither does AGMS."
-```
 
 🌱 → 🌿 → 🌾
 
